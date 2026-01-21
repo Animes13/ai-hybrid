@@ -9,4 +9,7 @@ ctx = {
 }
 
 ai = HybridAI()
-print(ai.analyze(ctx))
+result = ai.analyze(ctx)
+
+print("TIPO:", type(result))
+print("RESULTADO:", result)
