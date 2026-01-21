@@ -34,6 +34,8 @@ jobs:
         run: |
           echo "GEMINI_KEY_1=dummy-key" >> $GITHUB_ENV
           echo "GEMINI_KEY_2=dummy-key" >> $GITHUB_ENV
+          echo "GEMINI_KEY_3=dummy-key" >> $GITHUB_ENV
+          echo "GEMINI_KEY_4=dummy-key" >> $GITHUB_ENV
 
       - name: Run system check
         run: |
