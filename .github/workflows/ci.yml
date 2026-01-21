@@ -30,12 +30,16 @@ jobs:
             echo "No requirements.txt found"
           fi
 
-      - name: Set environment variables
+      - name: Install Ollama (LocalLLM)
         run: |
-          echo "GEMINI_KEY_1=dummy-key" >> $GITHUB_ENV
-          echo "GEMINI_KEY_2=dummy-key" >> $GITHUB_ENV
-          echo "GEMINI_KEY_3=dummy-key" >> $GITHUB_ENV
-          echo "GEMINI_KEY_4=dummy-key" >> $GITHUB_ENV
+          curl -fsSL https://ollama.com/install.sh | sh
+
+      - name: Set environment variables (4 Gemini keys)
+        run: |
+          echo "GEMINI_KEY_1=${{ secrets.GEMINI_KEY_1 }}" >> $GITHUB_ENV
+          echo "GEMINI_KEY_2=${{ secrets.GEMINI_KEY_2 }}" >> $GITHUB_ENV
+          echo "GEMINI_KEY_3=${{ secrets.GEMINI_KEY_3 }}" >> $GITHUB_ENV
+          echo "GEMINI_KEY_4=${{ secrets.GEMINI_KEY_4 }}" >> $GITHUB_ENV
 
       - name: Run system check
         run: |
