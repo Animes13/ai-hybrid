@@ -2,9 +2,9 @@ name: Hybrid AI CI
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
   pull_request:
-    branches: [ "main" ]
+    branches: ["main"]
 
 jobs:
   build:
@@ -30,7 +30,29 @@ jobs:
             echo "No requirements.txt found"
           fi
 
-      - name: Run basic check
+      - name: Set environment variables
         run: |
-          python --version
-          python -c "print('CI rodando com sucesso 🚀')"
+          echo "GEMINI_KEY_1=dummy-key" >> $GITHUB_ENV
+          echo "GEMINI_KEY_2=dummy-key" >> $GITHUB_ENV
+
+      - name: Run system check
+        run: |
+          python - << 'EOF'
+          from ai.hybrid import HybridAI
+
+          ctx = {
+              "anime": "Naruto",
+              "url": "https://example.com",
+              "stage": "episode_list",
+              "error_type": None,
+              "html": "<html><body><a href='ep1'>EP1</a></body></html>"
+          }
+
+          ai = HybridAI()
+          try:
+              result = ai.analyze(ctx)
+              print("OK:", result)
+          except Exception as e:
+              print("ERRO:", e)
+              raise
+          EOF

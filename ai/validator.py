@@ -1,3 +1,6 @@
+VALID_TYPES = {"episode_list", "selector_fix", "title_mapping"}
+
+
 def validate_response(data, context):
     if not isinstance(data, dict):
         raise ValueError("Resposta inválida")
@@ -5,8 +8,11 @@ def validate_response(data, context):
     if "type" not in data or "rules" not in data:
         raise ValueError("Formato inválido")
 
-    c = data.get("confidence", -1)
-    if not (0 <= c <= 1):
+    if data["type"] not in VALID_TYPES:
+        raise ValueError(f"Type inválido: {data['type']}")
+
+    confidence = data.get("confidence", -1)
+    if not (0 <= confidence <= 1):
         raise ValueError("Confidence inválido")
 
     rules = data["rules"]
