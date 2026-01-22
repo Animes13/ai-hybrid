@@ -55,14 +55,33 @@ class LocalLLM(AIEngine):
     def _safe_json(self, text: str) -> Dict[str, Any]:
         text = re.sub(r"```(?:json)?", "", text)
 
+        # remove texto antes do primeiro '{'
         start = text.find("{")
-        end = text.rfind("}")
+        if start == -1:
+            log.error("Nenhum JSON encontrado na resposta. Saída completa:\n%s", text)
+            raise ValueError("Nenhum JSON encontrado")
 
-        if start == -1 or end == -1 or end <= start:
-            log.error("JSON incompleto na resposta. Saída completa:\n%s", text)
-            raise ValueError("JSON incompleto")
+        text = text[start:]
 
-        json_text = text[start:end + 1]
+        # tentar encontrar JSON balanceado
+        open_count = 0
+        end_index = None
+        for i, ch in enumerate(text):
+            if ch == "{":
+                open_count += 1
+            elif ch == "}":
+                open_count -= 1
+                if open_count == 0:
+                    end_index = i
+                    break
+
+        if end_index is None:
+            # tentar fechar automaticamente
+            missing = open_count
+            text = text + ("}" * missing)
+            end_index = len(text) - 1
+
+        json_text = text[:end_index + 1]
 
         try:
             return json.loads(json_text)
