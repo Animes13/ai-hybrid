@@ -56,7 +56,7 @@ class GeminiClient(AIEngine):
         html = context.get("html", "")
 
         # NÃO inventar se HTML não for real
-        if html.strip() == "" or "..." in html:
+        if html.strip() == "" or "<html" not in html.lower():
             raise RuntimeError("HTML inválido ou placeholder. Use HTML real da pasta HTML/")
 
         last_error = None
