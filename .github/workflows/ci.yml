@@ -44,14 +44,23 @@ jobs:
       - name: Run system check
         run: |
           python - << 'EOF'
+          import os
           from ai.hybrid import HybridAI
+
+          html_path = "HTML/ep1.html"
+
+          if not os.path.exists(html_path):
+              raise FileNotFoundError(f"Arquivo não encontrado: {html_path}")
+
+          with open(html_path, "r", encoding="utf-8") as f:
+              html = f.read()
 
           ctx = {
               "anime": "Naruto",
               "url": "https://example.com",
               "stage": "episode_list",
               "error_type": None,
-              "html": "<html><body><a href='ep1'>EP1</a></body></html>"
+              "html": html
           }
 
           ai = HybridAI()

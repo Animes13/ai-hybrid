@@ -5,9 +5,7 @@ from ai.engine import AIEngine
 from ai.local_llm import LocalLLM
 from ai.gemini import GeminiClient
 
-
 log = logging.getLogger("HybridAI")
-
 
 class HybridAI(AIEngine):
 
@@ -17,6 +15,12 @@ class HybridAI(AIEngine):
         self.min_confidence = min_confidence
 
     def analyze(self, context: Dict[str, Any]) -> Dict[str, Any]:
+        html = context.get("html", "")
+
+        # NÃO inventar se HTML não for real
+        if html.strip() == "" or "..." in html:
+            raise RuntimeError("HTML inválido ou placeholder. Use HTML real da pasta HTML/")
+
         try:
             data = self.local.analyze(context)
             conf = data.get("confidence", 0)
@@ -33,5 +37,4 @@ class HybridAI(AIEngine):
             log.warning("LocalLLM falhou: %s", e)
 
         data = self.gemini.analyze(context)
-        data["_source"] = "gemini"
         return data

@@ -12,12 +12,10 @@ from ai.engine import AIEngine
 from ai.prompts import build_prompt
 from ai.validator import validate_response
 
-
 log = logging.getLogger("Gemini")
 
 COOLDOWN = 90
 MAX_RETRIES = 4
-
 
 class GeminiPool:
     def __init__(self):
@@ -50,12 +48,17 @@ class GeminiPool:
         log.warning("Key Gemini em cooldown")
         self.cooldown[key] = time.time() + COOLDOWN
 
-
 class GeminiClient(AIEngine):
     def __init__(self):
         self.pool = GeminiPool()
 
     def analyze(self, context: Dict[str, Any]) -> Dict[str, Any]:
+        html = context.get("html", "")
+
+        # NÃO inventar se HTML não for real
+        if html.strip() == "" or "..." in html:
+            raise RuntimeError("HTML inválido ou placeholder. Use HTML real da pasta HTML/")
+
         last_error = None
 
         for attempt in range(1, MAX_RETRIES + 1):
@@ -82,6 +85,7 @@ class GeminiClient(AIEngine):
                 validate_response(data, context)
 
                 log.info("Gemini retornou resposta válida")
+                data["_source"] = "gemini"
                 return data
 
             except Exception as e:

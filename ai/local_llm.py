@@ -3,20 +3,23 @@ import json
 import re
 import logging
 from typing import Dict, Any
-
 from ai.engine import AIEngine
 from ai.prompts import build_prompt
 from ai.validator import validate_response
 
-
 log = logging.getLogger("LocalLLM")
-
 
 class LocalLLM(AIEngine):
     MODEL = "qwen2.5:7b"
 
     def analyze(self, context: Dict[str, Any]) -> Dict[str, Any]:
-        log.info("Iniciando an√°lise LocalLLM")
+        html = context.get("html", "")
+
+        # NO inventar se HTML no for real
+        if html.strip() == "" or "..." in html:
+            raise RuntimeError("HTML inv·lido ou placeholder. Use HTML real da pasta HTML/")
+
+        log.info("Iniciando an·lise LocalLLM")
         prompt = build_prompt(context)
 
         try:
@@ -40,7 +43,8 @@ class LocalLLM(AIEngine):
         data = self._safe_json(r.stdout)
         validate_response(data, context)
 
-        log.info("LocalLLM retornou resposta v√°lida")
+        log.info("LocalLLM retornou resposta v·lida")
+        data["_source"] = "local"
         return data
 
     def _safe_json(self, text: str) -> Dict[str, Any]:
@@ -54,5 +58,5 @@ class LocalLLM(AIEngine):
         try:
             return json.loads(match.group())
         except json.JSONDecodeError as e:
-            log.error("JSON inv√°lido: %s", e)
+            log.error("JSON inv·lido: %s", e)
             raise
