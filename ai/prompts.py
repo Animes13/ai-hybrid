@@ -41,18 +41,16 @@ Formato OBRIGATÓRIO (EXATO):
 }}
 """
 
-def build_prompt_ollama(ctx: dict) -> str:
+def build_prompt_ollama_system() -> str:
+    return """
+Você é um analisador de HTML para scraping.
+RESPONDA APENAS COM JSON VÁLIDO, SEM NADA MAIS.
+SEM EXPLICAÇÕES, SEM MARKDOWN, SEM TEXTO ANTES OU DEPOIS.
+SEM QUEBRAS DE LINHA.
+"""
+
+def build_prompt_ollama_user(ctx: dict) -> str:
     return f"""
-Você é um analisador de HTML para scraping de alta precisão.
-
-⚠️ REGRAS ABSOLUTAS (Ollama):
-- RESPONDA APENAS COM JSON VÁLIDO.
-- NÃO explique nada.
-- NÃO use markdown.
-- NÃO use texto antes ou depois do JSON.
-- NÃO use quebras de linha (responda em UMA LINHA).
-- Se não conseguir gerar JSON válido, responda exatamente com o JSON padrão abaixo.
-
 Contexto:
 Anime: {ctx.get("anime")}
 URL: {ctx.get("url")}
@@ -62,7 +60,7 @@ Erro: {ctx.get("error_type")}
 HTML:
 {ctx.get("html")}
 
-JSON OBRIGATÓRIO (EXATO):
+FORMATO OBRIGATÓRIO:
 
 {{"type": "episode_list | selector_fix | title_mapping", "confidence": 0.0, "rules": {{"css": "", "xpath": "", "regex": ""}}}}
 

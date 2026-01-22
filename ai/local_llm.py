@@ -5,7 +5,7 @@ import requests
 from typing import Dict, Any
 
 from ai.engine import AIEngine
-from ai.prompts import build_prompt_ollama
+from ai.prompts import build_prompt_ollama_system, build_prompt_ollama_user
 from ai.validator import validate_response
 
 log = logging.getLogger("LocalLLM")
@@ -21,14 +21,20 @@ class LocalLLM(AIEngine):
             raise RuntimeError("HTML inválido ou placeholder. Use HTML real da pasta HTML/")
 
         log.info("Iniciando análise LocalLLM")
-        prompt = build_prompt_ollama(context)
+
+        # PROMPTS
+        prompt_system = build_prompt_ollama_system()
+        prompt_user = build_prompt_ollama_user(context)
 
         try:
             response = requests.post(
                 self.OLLAMA_URL,
                 json={
                     "model": self.MODEL,
-                    "messages": [{"role": "user", "content": prompt}],
+                    "messages": [
+                        {"role": "system", "content": prompt_system},
+                        {"role": "user", "content": prompt_user}
+                    ],
                     "temperature": 0.1,
                     "max_tokens": 1024
                 },
