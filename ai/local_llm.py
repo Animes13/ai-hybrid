@@ -1,8 +1,8 @@
 import json
 import re
 import logging
-from typing import Dict, Any
 import requests
+from typing import Dict, Any
 
 from ai.engine import AIEngine
 from ai.prompts import build_prompt
@@ -11,7 +11,7 @@ from ai.validator import validate_response
 log = logging.getLogger("LocalLLM")
 
 class LocalLLM(AIEngine):
-    MODEL = "qwen2.5:7b"
+    MODEL = "llama3-mini"
     OLLAMA_URL = "http://127.0.0.1:11434/v1/chat/completions"
 
     def analyze(self, context: Dict[str, Any]) -> Dict[str, Any]:
@@ -30,8 +30,7 @@ class LocalLLM(AIEngine):
                     "model": self.MODEL,
                     "messages": [{"role": "user", "content": prompt}],
                     "temperature": 0.1,
-                    "max_tokens": 2048,   # AUMENTADO
-                    "stop": None
+                    "max_tokens": 1024
                 },
                 timeout=600
             )

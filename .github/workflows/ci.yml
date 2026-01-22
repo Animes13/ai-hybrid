@@ -36,11 +36,19 @@ jobs:
 
       - name: Pull Ollama model
         run: |
-          ollama pull qwen2.5:7b
+          ollama pull llama3-mini
 
       - name: Start Ollama service
         run: |
           sudo systemctl start ollama
+
+      - name: Wait for Ollama
+        run: |
+          for i in {1..20}; do
+            curl -s http://127.0.0.1:11434/v1/models >/dev/null 2>&1 && break
+            echo "Waiting for Ollama..."
+            sleep 3
+          done
 
       - name: Set environment variables (4 Gemini keys)
         run: |
