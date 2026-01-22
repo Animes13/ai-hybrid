@@ -48,6 +48,7 @@ class GeminiPool:
         log.warning("Key Gemini em cooldown")
         self.cooldown[key] = time.time() + COOLDOWN
 
+
 class GeminiClient(AIEngine):
     def __init__(self):
         self.pool = GeminiPool()
@@ -96,10 +97,19 @@ class GeminiClient(AIEngine):
         raise RuntimeError(f"Gemini falhou após retries: {last_error}")
 
     def _safe_json(self, text: str) -> Dict[str, Any]:
+        # remove blocos de código
         text = re.sub(r"```(?:json)?", "", text)
-        match = re.search(r"\{.*\}", text, re.S)
+
+        # tenta achar o primeiro JSON válido
+        match = re.search(r"\{(?:[^{}]|(?R))*\}", text)
 
         if not match:
+            log.error("Nenhum JSON encontrado na resposta:\n%s", text)
             raise ValueError("Nenhum JSON encontrado")
 
-        return json.loads(match.group())
+        try:
+            return json.loads(match.group())
+        except json.JSONDecodeError as e:
+            log.error("JSON inválido: %s", e)
+            log.error("Resposta completa:\n%s", text)
+            raise

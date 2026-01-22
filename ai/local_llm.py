@@ -28,7 +28,7 @@ class LocalLLM(AIEngine):
                 input=prompt,
                 text=True,
                 capture_output=True,
-                timeout=120
+                timeout=300
             )
         except subprocess.TimeoutExpired:
             log.error("Timeout no Ollama")

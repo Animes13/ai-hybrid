@@ -11,7 +11,9 @@ REGRAS ABSOLUTAS:
 - NÃO chute seletores.
 - NÃO explique seu raciocínio.
 - NÃO use markdown.
-- RESPONDA APENAS COM JSON VÁLIDO.
+
+⚠️ INSTRUÇÃO IMPORTANTE:
+RESPONDA APENAS COM JSON VÁLIDO SEM NENHUM TEXTO EXTRA, NEM UMA PALAVRA ANTES OU DEPOIS.
 
 Contexto:
 Anime: {ctx.get("anime")}
@@ -22,7 +24,7 @@ Erro: {ctx.get("error_type")}
 HTML:
 {ctx.get("html")}
 
-Formato OBRIGATÓRIO:
+Formato OBRIGATÓRIO (EXATO):
 
 {{
   "type": "episode_list | selector_fix | title_mapping",
