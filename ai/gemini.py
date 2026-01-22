@@ -56,7 +56,6 @@ class GeminiClient(AIEngine):
     def analyze(self, context: Dict[str, Any]) -> Dict[str, Any]:
         html = context.get("html", "")
 
-        # NÃO inventar se HTML não for real
         if html.strip() == "" or "<html" not in html.lower():
             raise RuntimeError("HTML inválido ou placeholder. Use HTML real da pasta HTML/")
 
@@ -78,7 +77,7 @@ class GeminiClient(AIEngine):
                     contents=prompt,
                     config=types.GenerateContentConfig(
                         temperature=0.1,
-                        max_output_tokens=1024,
+                        max_output_tokens=2048,  # AUMENTADO
                     )
                 )
 
@@ -92,7 +91,9 @@ class GeminiClient(AIEngine):
             except Exception as e:
                 log.error("Erro Gemini: %s", e)
                 last_error = e
-                self.pool.fail(key)
+                # NÃO colocar em cooldown se o erro for JSON incompleto
+                if "JSON incompleto" not in str(e):
+                    self.pool.fail(key)
 
         raise RuntimeError(f"Gemini falhou após retries: {last_error}")
 

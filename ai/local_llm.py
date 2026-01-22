@@ -17,7 +17,6 @@ class LocalLLM(AIEngine):
     def analyze(self, context: Dict[str, Any]) -> Dict[str, Any]:
         html = context.get("html", "")
 
-        # NÃO inventar se HTML não for real
         if html.strip() == "" or "<html" not in html.lower():
             raise RuntimeError("HTML inválido ou placeholder. Use HTML real da pasta HTML/")
 
@@ -31,7 +30,8 @@ class LocalLLM(AIEngine):
                     "model": self.MODEL,
                     "messages": [{"role": "user", "content": prompt}],
                     "temperature": 0.1,
-                    "max_tokens": 1024
+                    "max_tokens": 2048,   # AUMENTADO
+                    "stop": None
                 },
                 timeout=600
             )
@@ -44,7 +44,6 @@ class LocalLLM(AIEngine):
             raise RuntimeError(response.text)
 
         text = response.json()["choices"][0]["message"]["content"]
-
         log.debug("Resposta bruta do modelo: %s", text[:500])
 
         data = self._safe_json(text)

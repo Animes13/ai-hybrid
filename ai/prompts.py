@@ -14,7 +14,7 @@ REGRAS ABSOLUTAS:
 
 ⚠️ INSTRUÇÃO IMPORTANTE:
 RESPONDA APENAS COM JSON VÁLIDO SEM NENHUM TEXTO EXTRA, NEM UMA PALAVRA ANTES OU DEPOIS.
-SE a resposta for muito longa, corte outras partes, mas NÃO corte o JSON.
+RESPONDA EM UMA LINHA SOMENTE (SEM QUEBRAS DE LINHA).
 
 Contexto:
 Anime: {ctx.get("anime")}
