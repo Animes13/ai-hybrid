@@ -28,7 +28,7 @@ class LocalLLM(AIEngine):
                 input=prompt,
                 text=True,
                 capture_output=True,
-                timeout=300
+                timeout=300  # Aumentado
             )
         except subprocess.TimeoutExpired:
             log.error("Timeout no Ollama")
@@ -49,15 +49,27 @@ class LocalLLM(AIEngine):
 
     def _safe_json(self, text: str) -> Dict[str, Any]:
         text = re.sub(r"```(?:json)?", "", text)
-        match = re.search(r"\{.*\}", text, re.S)
 
-        if not match:
+        start = text.find("{")
+        if start == -1:
             log.error("Nenhum JSON encontrado na resposta. Saída completa:\n%s", text)
             raise ValueError("Nenhum JSON encontrado")
 
-        try:
-            return json.loads(match.group())
-        except json.JSONDecodeError as e:
-            log.error("JSON inválido: %s", e)
-            log.error("Saída completa:\n%s", text)
-            raise
+        depth = 0
+        for i in range(start, len(text)):
+            if text[i] == "{":
+                depth += 1
+            elif text[i] == "}":
+                depth -= 1
+
+            if depth == 0:
+                json_text = text[start:i+1]
+                try:
+                    return json.loads(json_text)
+                except json.JSONDecodeError as e:
+                    log.error("JSON inválido: %s", e)
+                    log.error("Trecho JSON:\n%s", json_text)
+                    raise
+
+        log.error("JSON incompleto na resposta. Saída completa:\n%s", text)
+        raise ValueError("JSON incompleto")
