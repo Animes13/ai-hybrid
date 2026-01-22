@@ -16,7 +16,7 @@ class LocalLLM(AIEngine):
         html = context.get("html", "")
 
         # NÃO inventar se HTML não for real
-        if html.strip() == "" or "..." in html:
+        if html.strip() == "" or "<html" not in html.lower():
             raise RuntimeError("HTML inválido ou placeholder. Use HTML real da pasta HTML/")
 
         log.info("Iniciando análise LocalLLM")
@@ -52,11 +52,12 @@ class LocalLLM(AIEngine):
         match = re.search(r"\{.*\}", text, re.S)
 
         if not match:
-            log.error("Nenhum JSON encontrado na resposta")
+            log.error("Nenhum JSON encontrado na resposta. Saída completa:\n%s", text)
             raise ValueError("Nenhum JSON encontrado")
 
         try:
             return json.loads(match.group())
         except json.JSONDecodeError as e:
             log.error("JSON inválido: %s", e)
+            log.error("Saída completa:\n%s", text)
             raise
