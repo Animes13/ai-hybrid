@@ -5,7 +5,7 @@ import requests
 from typing import Dict, Any
 
 from ai.engine import AIEngine
-from ai.prompts import build_prompt
+from ai.prompts import build_prompt_ollama
 from ai.validator import validate_response
 
 log = logging.getLogger("LocalLLM")
@@ -21,7 +21,7 @@ class LocalLLM(AIEngine):
             raise RuntimeError("HTML inválido ou placeholder. Use HTML real da pasta HTML/")
 
         log.info("Iniciando análise LocalLLM")
-        prompt = build_prompt(context)
+        prompt = build_prompt_ollama(context)
 
         try:
             response = requests.post(

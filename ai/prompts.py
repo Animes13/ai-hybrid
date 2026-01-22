@@ -40,3 +40,33 @@ Formato OBRIGATÓRIO (EXATO):
   }}
 }}
 """
+
+def build_prompt_ollama(ctx: dict) -> str:
+    return f"""
+Você é um analisador de HTML para scraping de alta precisão.
+
+⚠️ REGRAS ABSOLUTAS (Ollama):
+- RESPONDA APENAS COM JSON VÁLIDO.
+- NÃO explique nada.
+- NÃO use markdown.
+- NÃO use texto antes ou depois do JSON.
+- NÃO use quebras de linha (responda em UMA LINHA).
+- Se não conseguir gerar JSON válido, responda exatamente com o JSON padrão abaixo.
+
+Contexto:
+Anime: {ctx.get("anime")}
+URL: {ctx.get("url")}
+Etapa: {ctx.get("stage")}
+Erro: {ctx.get("error_type")}
+
+HTML:
+{ctx.get("html")}
+
+JSON OBRIGATÓRIO (EXATO):
+
+{{"type": "episode_list | selector_fix | title_mapping", "confidence": 0.0, "rules": {{"css": "", "xpath": "", "regex": ""}}}}
+
+Se não conseguir gerar JSON válido, responda exatamente:
+
+{{"type": "", "confidence": 0.0, "rules": {{"css": "", "xpath": "", "regex": ""}}}}
+"""
