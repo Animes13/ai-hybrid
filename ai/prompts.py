@@ -12,12 +12,20 @@ REGRAS ABSOLUTAS:
 - NÃO explique seu raciocínio.
 - NÃO use markdown.
 
-⚠️ INSTRUÇÃO IMPORTANTE:
-RESPONDA APENAS COM JSON VÁLIDO SEM NENHUM TEXTO EXTRA, NEM UMA PALAVRA ANTES OU DEPOIS.
-RESPONDA EM UMA LINHA SOMENTE (SEM QUEBRAS DE LINHA).
+⚠️ INSTRUÇÃO CRÍTICA:
+RESPONDA APENAS COM JSON VÁLIDO.
+NÃO escreva nenhuma palavra fora do JSON.
+RESPONDA EM UMA ÚNICA LINHA (SEM QUEBRA DE LINHA).
 
-SE VOCÊ NÃO CONSEGUIR GERAR UM JSON VÁLIDO, RESPONDA EXATAMENTE COM:
-{{{{"type": "", "confidence": 0.0, "rules": {{{{"css": "", "xpath": "", "regex": ""}}}}}}}}
+TIPOS PERMITIDOS (ESCOLHA APENAS UM):
+- anime_list
+- anime_page
+- anime_eps
+- selector_fix
+- title_mapping
+
+SE NÃO CONSEGUIR GERAR UM JSON VÁLIDO, RESPONDA EXATAMENTE COM:
+{{"type":"","confidence":0.0,"rules":{{"css":"","xpath":"","regex":""}}}}
 
 Contexto:
 Anime: {ctx.get("anime")}
@@ -28,26 +36,24 @@ Erro: {ctx.get("error_type")}
 HTML:
 {ctx.get("html")}
 
-Formato OBRIGATÓRIO (EXATO):
+FORMATO OBRIGATÓRIO (EXEMPLO VÁLIDO):
 
-{{
-  "type": "anime_list | anime_page | anime_eps | selector_fix | title_mapping"
-  "confidence": 0.0,
-  "rules": {{
-    "css": "",
-    "xpath": "",
-    "regex": ""
-  }}
-}}
+{{"type":"anime_eps","confidence":0.75,"rules":{{"css":".episode-card a","xpath":"","regex":""}}}}
 """
+
 
 def build_prompt_ollama_system() -> str:
     return """
 Você é um analisador de HTML para scraping.
-RESPONDA APENAS COM JSON VÁLIDO, SEM NADA MAIS.
-SEM EXPLICAÇÕES, SEM MARKDOWN, SEM TEXTO ANTES OU DEPOIS.
-SEM QUEBRAS DE LINHA.
+
+REGRAS:
+- RESPONDA APENAS COM JSON VÁLIDO
+- SEM EXPLICAÇÕES
+- SEM MARKDOWN
+- SEM TEXTO ANTES OU DEPOIS
+- EM UMA ÚNICA LINHA
 """
+
 
 def build_prompt_ollama_user(ctx: dict) -> str:
     return f"""
@@ -60,11 +66,21 @@ Erro: {ctx.get("error_type")}
 HTML:
 {ctx.get("html")}
 
-FORMATO OBRIGATÓRIO:
+ESCOLHA APENAS UM DOS TIPOS ABAIXO:
+- anime_list
+- anime_page
+- anime_eps
+- selector_fix
+- title_mapping
 
-{{"type": "episode_list | selector_fix | title_mapping", "confidence": 0.0, "rules": {{"css": "", "xpath": "", "regex": ""}}}}
+RESPONDA APENAS COM JSON VÁLIDO EM UMA LINHA.
+NÃO escreva nenhuma palavra fora do JSON.
 
-Se não conseguir gerar JSON válido, responda exatamente:
+FORMATO OBRIGATÓRIO (EXEMPLO):
 
-{{"type": "", "confidence": 0.0, "rules": {{"css": "", "xpath": "", "regex": ""}}}}
+{{"type":"anime_page","confidence":0.6,"rules":{{"css":"h1.title","xpath":"","regex":""}}}}
+
+SE NÃO CONSEGUIR GERAR JSON VÁLIDO, RESPONDA EXATAMENTE:
+
+{{"type":"","confidence":0.0,"rules":{{"css":"","xpath":"","regex":""}}}}
 """
