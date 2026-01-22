@@ -34,6 +34,14 @@ jobs:
         run: |
           curl -fsSL https://ollama.com/install.sh | sh
 
+      - name: Pull Ollama model
+        run: |
+          ollama pull qwen2.5:7b
+
+      - name: Start Ollama service
+        run: |
+          sudo systemctl start ollama
+
       - name: Set environment variables (4 Gemini keys)
         run: |
           echo "GEMINI_KEY_1=${{ secrets.GEMINI_KEY_1 }}" >> $GITHUB_ENV

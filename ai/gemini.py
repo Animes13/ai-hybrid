@@ -97,19 +97,20 @@ class GeminiClient(AIEngine):
         raise RuntimeError(f"Gemini falhou após retries: {last_error}")
 
     def _safe_json(self, text: str) -> Dict[str, Any]:
-        # remove blocos de código
         text = re.sub(r"```(?:json)?", "", text)
 
-        # tenta achar o primeiro JSON válido
-        match = re.search(r"\{(?:[^{}]|(?R))*\}", text)
+        start = text.find("{")
+        end = text.rfind("}")
 
-        if not match:
+        if start == -1 or end == -1 or end <= start:
             log.error("Nenhum JSON encontrado na resposta:\n%s", text)
             raise ValueError("Nenhum JSON encontrado")
 
+        json_text = text[start:end+1]
+
         try:
-            return json.loads(match.group())
+            return json.loads(json_text)
         except json.JSONDecodeError as e:
             log.error("JSON inválido: %s", e)
-            log.error("Resposta completa:\n%s", text)
+            log.error("Trecho JSON:\n%s", json_text)
             raise
