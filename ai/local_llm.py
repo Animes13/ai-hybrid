@@ -15,11 +15,11 @@ class LocalLLM(AIEngine):
     def analyze(self, context: Dict[str, Any]) -> Dict[str, Any]:
         html = context.get("html", "")
 
-        # NO inventar se HTML no for real
+        # NÃO inventar se HTML não for real
         if html.strip() == "" or "..." in html:
-            raise RuntimeError("HTML inv�lido ou placeholder. Use HTML real da pasta HTML/")
+            raise RuntimeError("HTML inválido ou placeholder. Use HTML real da pasta HTML/")
 
-        log.info("Iniciando an�lise LocalLLM")
+        log.info("Iniciando análise LocalLLM")
         prompt = build_prompt(context)
 
         try:
@@ -43,7 +43,7 @@ class LocalLLM(AIEngine):
         data = self._safe_json(r.stdout)
         validate_response(data, context)
 
-        log.info("LocalLLM retornou resposta v�lida")
+        log.info("LocalLLM retornou resposta válida")
         data["_source"] = "local"
         return data
 
@@ -58,5 +58,5 @@ class LocalLLM(AIEngine):
         try:
             return json.loads(match.group())
         except json.JSONDecodeError as e:
-            log.error("JSON inv�lido: %s", e)
+            log.error("JSON inválido: %s", e)
             raise
