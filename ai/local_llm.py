@@ -22,7 +22,6 @@ class LocalLLM(AIEngine):
 
         log.info("Iniciando análise LocalLLM")
 
-        # PROMPTS
         prompt_system = build_prompt_ollama_system()
         prompt_user = build_prompt_ollama_user(context)
 
@@ -59,9 +58,10 @@ class LocalLLM(AIEngine):
         return data
 
     def _safe_json(self, text: str) -> Dict[str, Any]:
+        # Remove blocos de código
         text = re.sub(r"```(?:json)?", "", text)
 
-        # remove texto antes do primeiro '{'
+        # Captura apenas o primeiro JSON válido
         start = text.find("{")
         if start == -1:
             log.error("Nenhum JSON encontrado na resposta. Saída completa:\n%s", text)
@@ -69,7 +69,7 @@ class LocalLLM(AIEngine):
 
         text = text[start:]
 
-        # tentar encontrar JSON balanceado
+        # Encontrar JSON balanceado (primeiro objeto)
         open_count = 0
         end_index = None
         for i, ch in enumerate(text):
@@ -82,10 +82,8 @@ class LocalLLM(AIEngine):
                     break
 
         if end_index is None:
-            # tentar fechar automaticamente
-            missing = open_count
-            text = text + ("}" * missing)
-            end_index = len(text) - 1
+            log.error("JSON incompleto na resposta. Saída completa:\n%s", text)
+            raise ValueError("JSON incompleto")
 
         json_text = text[:end_index + 1]
 
@@ -94,4 +92,4 @@ class LocalLLM(AIEngine):
         except json.JSONDecodeError as e:
             log.error("JSON inválido: %s", e)
             log.error("Trecho JSON:\n%s", json_text)
-            raise ValueError("JSON incompleto")
+            raise ValueError("JSON inválido")
