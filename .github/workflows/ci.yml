@@ -36,7 +36,7 @@ jobs:
 
       - name: Pull Ollama model
         run: |
-          ollama pull llama3-mini
+          ollama pull mistral-7b
 
       - name: Start Ollama service
         run: |
