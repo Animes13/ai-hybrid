@@ -11,7 +11,7 @@ from ai.validator import validate_response
 log = logging.getLogger("LocalLLM")
 
 class LocalLLM(AIEngine):
-    MODEL = "mistral-7b"
+    MODEL = "llama3.2:1b"
     OLLAMA_URL = "http://127.0.0.1:11434/v1/chat/completions"
 
     def analyze(self, context: Dict[str, Any]) -> Dict[str, Any]:
