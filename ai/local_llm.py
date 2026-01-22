@@ -1,8 +1,9 @@
-import subprocess
 import json
 import re
 import logging
 from typing import Dict, Any
+import requests
+
 from ai.engine import AIEngine
 from ai.prompts import build_prompt
 from ai.validator import validate_response
@@ -11,6 +12,7 @@ log = logging.getLogger("LocalLLM")
 
 class LocalLLM(AIEngine):
     MODEL = "qwen2.5:7b"
+    OLLAMA_URL = "http://127.0.0.1:11434/v1/chat/completions"
 
     def analyze(self, context: Dict[str, Any]) -> Dict[str, Any]:
         html = context.get("html", "")
@@ -23,24 +25,29 @@ class LocalLLM(AIEngine):
         prompt = build_prompt(context)
 
         try:
-            r = subprocess.run(
-                ["ollama", "run", self.MODEL],
-                input=prompt,
-                text=True,
-                capture_output=True,
-                timeout=300  # Aumentado
+            response = requests.post(
+                self.OLLAMA_URL,
+                json={
+                    "model": self.MODEL,
+                    "messages": [{"role": "user", "content": prompt}],
+                    "temperature": 0.1,
+                    "max_tokens": 1024
+                },
+                timeout=600
             )
-        except subprocess.TimeoutExpired:
-            log.error("Timeout no Ollama")
-            raise RuntimeError("Timeout no Ollama")
+        except requests.Timeout:
+            log.error("Timeout no Ollama API")
+            raise RuntimeError("Timeout no Ollama API")
 
-        if r.returncode != 0:
-            log.error("Erro no Ollama: %s", r.stderr)
-            raise RuntimeError(r.stderr)
+        if response.status_code != 200:
+            log.error("Erro no Ollama API: %s", response.text)
+            raise RuntimeError(response.text)
 
-        log.debug("Resposta bruta do modelo: %s", r.stdout[:500])
+        text = response.json()["choices"][0]["message"]["content"]
 
-        data = self._safe_json(r.stdout)
+        log.debug("Resposta bruta do modelo: %s", text[:500])
+
+        data = self._safe_json(text)
         validate_response(data, context)
 
         log.info("LocalLLM retornou resposta válida")
@@ -51,25 +58,17 @@ class LocalLLM(AIEngine):
         text = re.sub(r"```(?:json)?", "", text)
 
         start = text.find("{")
-        if start == -1:
-            log.error("Nenhum JSON encontrado na resposta. Saída completa:\n%s", text)
-            raise ValueError("Nenhum JSON encontrado")
+        end = text.rfind("}")
 
-        depth = 0
-        for i in range(start, len(text)):
-            if text[i] == "{":
-                depth += 1
-            elif text[i] == "}":
-                depth -= 1
+        if start == -1 or end == -1 or end <= start:
+            log.error("JSON incompleto na resposta. Saída completa:\n%s", text)
+            raise ValueError("JSON incompleto")
 
-            if depth == 0:
-                json_text = text[start:i+1]
-                try:
-                    return json.loads(json_text)
-                except json.JSONDecodeError as e:
-                    log.error("JSON inválido: %s", e)
-                    log.error("Trecho JSON:\n%s", json_text)
-                    raise
+        json_text = text[start:end + 1]
 
-        log.error("JSON incompleto na resposta. Saída completa:\n%s", text)
-        raise ValueError("JSON incompleto")
+        try:
+            return json.loads(json_text)
+        except json.JSONDecodeError as e:
+            log.error("JSON inválido: %s", e)
+            log.error("Trecho JSON:\n%s", json_text)
+            raise ValueError("JSON incompleto")

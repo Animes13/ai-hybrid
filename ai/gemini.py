@@ -100,25 +100,17 @@ class GeminiClient(AIEngine):
         text = re.sub(r"```(?:json)?", "", text)
 
         start = text.find("{")
-        if start == -1:
-            log.error("Nenhum JSON encontrado na resposta:\n%s", text)
-            raise ValueError("Nenhum JSON encontrado")
+        end = text.rfind("}")
 
-        depth = 0
-        for i in range(start, len(text)):
-            if text[i] == "{":
-                depth += 1
-            elif text[i] == "}":
-                depth -= 1
+        if start == -1 or end == -1 or end <= start:
+            log.error("JSON incompleto na resposta:\n%s", text)
+            raise ValueError("JSON incompleto")
 
-            if depth == 0:
-                json_text = text[start:i+1]
-                try:
-                    return json.loads(json_text)
-                except json.JSONDecodeError as e:
-                    log.error("JSON inválido: %s", e)
-                    log.error("Trecho JSON:\n%s", json_text)
-                    raise
+        json_text = text[start:end + 1]
 
-        log.error("JSON incompleto na resposta:\n%s", text)
-        raise ValueError("JSON incompleto")
+        try:
+            return json.loads(json_text)
+        except json.JSONDecodeError as e:
+            log.error("JSON inválido: %s", e)
+            log.error("Trecho JSON:\n%s", json_text)
+            raise ValueError("JSON incompleto")
