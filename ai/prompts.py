@@ -31,7 +31,7 @@ HTML:
 Formato OBRIGATÓRIO (EXATO):
 
 {{
-  "type": "episode_list | selector_fix | title_mapping",
+  "type": "anime_list | anime_page | anime_eps | selector_fix | title_mapping"
   "confidence": 0.0,
   "rules": {{
     "css": "",

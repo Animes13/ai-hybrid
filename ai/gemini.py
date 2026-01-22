@@ -17,15 +17,15 @@ log = logging.getLogger("Gemini")
 COOLDOWN = 90
 MAX_RETRIES = 4
 
+
 class GeminiPool:
     def __init__(self):
-        self.keys = [
+        self.keys = [k for k in (
             os.getenv("GEMINI_KEY_1"),
             os.getenv("GEMINI_KEY_2"),
             os.getenv("GEMINI_KEY_3"),
             os.getenv("GEMINI_KEY_4"),
-        ]
-        self.keys = [k for k in self.keys if k]
+        ) if k]
 
         if not self.keys:
             raise RuntimeError("Nenhuma GEMINI_KEY configurada")
@@ -38,10 +38,8 @@ class GeminiPool:
         for _ in range(len(self.keys)):
             key = self.keys[self.idx]
             self.idx = (self.idx + 1) % len(self.keys)
-
             if self.cooldown[key] <= now:
                 return key
-
         return None
 
     def fail(self, key: str):
@@ -50,23 +48,21 @@ class GeminiPool:
 
 
 class GeminiClient(AIEngine):
+
     def __init__(self):
         self.pool = GeminiPool()
 
     def analyze(self, context: Dict[str, Any]) -> Dict[str, Any]:
         html = context.get("html", "")
-
-        if html.strip() == "" or "<html" not in html.lower():
-            raise RuntimeError("HTML inválido ou placeholder. Use HTML real da pasta HTML/")
+        if not html or "<html" not in html.lower():
+            raise RuntimeError("HTML inválido")
 
         last_error = None
 
-        for attempt in range(1, MAX_RETRIES + 1):
+        for attempt in range(MAX_RETRIES):
             key = self.pool.next()
             if not key:
                 break
-
-            log.info("Tentativa Gemini %s/%s", attempt, MAX_RETRIES)
 
             try:
                 client = genai.Client(api_key=key)
@@ -77,41 +73,38 @@ class GeminiClient(AIEngine):
                     contents=prompt,
                     config=types.GenerateContentConfig(
                         temperature=0.1,
-                        max_output_tokens=2048,  # AUMENTADO
+                        max_output_tokens=2048,
                     )
                 )
 
                 data = self._safe_json(r.text)
                 validate_response(data, context)
-
-                log.info("Gemini retornou resposta válida")
                 data["_source"] = "gemini"
                 return data
 
             except Exception as e:
-                log.error("Erro Gemini: %s", e)
                 last_error = e
-                # NÃO colocar em cooldown se o erro for JSON incompleto
+                log.error("Erro Gemini: %s", e)
                 if "JSON incompleto" not in str(e):
                     self.pool.fail(key)
 
-        raise RuntimeError(f"Gemini falhou após retries: {last_error}")
+        raise RuntimeError(f"Gemini falhou: {last_error}")
 
     def _safe_json(self, text: str) -> Dict[str, Any]:
         text = re.sub(r"```(?:json)?", "", text)
 
         start = text.find("{")
-        end = text.rfind("}")
-
-        if start == -1 or end == -1 or end <= start:
-            log.error("JSON incompleto na resposta:\n%s", text)
+        if start == -1:
             raise ValueError("JSON incompleto")
 
-        json_text = text[start:end + 1]
+        open_count = 0
+        for i, ch in enumerate(text[start:]):
+            if ch == "{":
+                open_count += 1
+            elif ch == "}":
+                open_count -= 1
+                if open_count == 0:
+                    json_text = text[start:start + i + 1]
+                    return json.loads(json_text)
 
-        try:
-            return json.loads(json_text)
-        except json.JSONDecodeError as e:
-            log.error("JSON inválido: %s", e)
-            log.error("Trecho JSON:\n%s", json_text)
-            raise ValueError("JSON incompleto")
+        raise ValueError("JSON incompleto")
