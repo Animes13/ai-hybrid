@@ -18,7 +18,8 @@ class HybridAI(AIEngine):
         html = context.get("html", "")
 
         # NÃO inventar se HTML não for real
-        if html.strip() == "" or "..." in html:
+        # Validar apenas se está vazio ou se não parece HTML
+        if html.strip() == "" or "<html" not in html.lower():
             raise RuntimeError("HTML inválido ou placeholder. Use HTML real da pasta HTML/")
 
         try:
