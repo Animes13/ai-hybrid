@@ -17,7 +17,7 @@ RESPONDA APENAS COM JSON VÁLIDO SEM NENHUM TEXTO EXTRA, NEM UMA PALAVRA ANTES O
 RESPONDA EM UMA LINHA SOMENTE (SEM QUEBRAS DE LINHA).
 
 SE VOCÊ NÃO CONSEGUIR GERAR UM JSON VÁLIDO, RESPONDA EXATAMENTE COM:
-{{"type": "", "confidence": 0.0, "rules": {"css": "", "xpath": "", "regex": ""}}}
+{{{{"type": "", "confidence": 0.0, "rules": {{{{"css": "", "xpath": "", "regex": ""}}}}}}}}
 
 Contexto:
 Anime: {ctx.get("anime")}
